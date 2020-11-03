@@ -1,52 +1,67 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class PointsMovement : MonoBehaviour
 {
+    #region PUBLIC VARIABLES
     public int Loops { get; private set; }
 
-    [SerializeField]
-    private List<Vector3> _values;
+    #endregion
 
-    [SerializeField]
-    private float _transition = 2f;
+    #region PRIVATE VARIABLES
 
-    private Vector3 _currentValue;
+    [SerializeField] private GameData _gameData;
 
-    private float _transitionStep;
+    [SerializeField] private Transform _myTransform;
 
-    private int _valueIndex;
+    #endregion
+
+
+
+    private void Awake()
+    {
+        _myTransform = transform;
+    } 
 
     private void Start()
     {
-        _transitionStep = 0;
-
-        _valueIndex = 0;
-
-        Loops = 0;
-
-        _currentValue = transform.position;
+        StartCoroutine(MoveSphere(_gameData));
     }
 
     void Update()
     {
-        if (_transition > _transitionStep)
-        {
-            _transitionStep += Time.deltaTime;
+        
+    }  
 
-            float step = _transitionStep / _transition;
+    private IEnumerator MoveSphere(GameData data)
+    {
+        
+        if (_myTransform == null || _gameData == null) yield break;
 
-            transform.position = Vector3.Lerp(_currentValue, _values[_valueIndex], step);
+        while (true){
+
+            if (data.Transition > data.TransitionStep)
+            {
+                data.TransitionStep += Time.deltaTime;
+
+                float step = data.TransitionStep / data.Transition;
+
+                _myTransform.position = Vector3.Lerp(_myTransform.position, data.Values[data.ValueIndex], step);
+            }
+            else
+            {
+                data.TransitionStep = 0;
+
+                _myTransform.position = data.Values[data.ValueIndex];
+
+                data.ValueIndex = (data.ValueIndex + 1) % data.Values.Count;
+
+                Loops++;
+            }
+            yield return null;
         }
-        else
-        {
-            _transitionStep = 0;
-
-            _currentValue = _values[_valueIndex];
-
-            _valueIndex = (_valueIndex + 1) % _values.Count;
-
-            Loops++;
-        }
-    }
+        
+    } 
 }
